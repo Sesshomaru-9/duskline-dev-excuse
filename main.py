@@ -12,7 +12,29 @@ import sys
 ENTRY_TEXT = "Production is down because the only person who understood that code quit in 2019 \u2014 and it was me."
 
 
+def validate_entry(text: str) -> bool:
+    """Check the entry is a single non-empty line, at most 200 chars,
+    valid UTF-8. Returns True if valid, else prints why to stderr."""
+    if not text:
+        print("entry is empty", file=sys.stderr)
+        return False
+    if "\n" in text or "\r" in text:
+        print("entry must be a single line", file=sys.stderr)
+        return False
+    if len(text) > 200:
+        print(f"entry is {len(text)} chars, over the 200-char limit", file=sys.stderr)
+        return False
+    try:
+        text.encode("utf-8")
+    except UnicodeEncodeError as exc:
+        print(f"entry is not valid UTF-8: {exc}", file=sys.stderr)
+        return False
+    return True
+
+
 def main() -> int:
+    if not validate_entry(ENTRY_TEXT):
+        return 0
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
     # Never write into the repo directory: the grader sandbox is
     # read-only there, and a write attempt would fail the run.
